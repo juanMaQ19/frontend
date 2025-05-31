@@ -4,11 +4,37 @@ import React, { useEffect, useState } from "react"
 import { Send, MessageCircle, ArrowRight } from "lucide-react"
 import Link from "next/link"
 
+// Función para extraer la URL real de la imagen
+const extractImageUrl = (url: string): string => {
+  try {
+    // Si la URL tiene el parámetro imgurl, usarlo
+    const params = new URLSearchParams(new URL(url).search);
+    const imgurl = params.get('imgurl');
+    if (imgurl) {
+      const decodedUrl = decodeURIComponent(imgurl);
+      if (decodedUrl.startsWith('http://') || decodedUrl.startsWith('https://')) {
+        return decodedUrl;
+      }
+    }
+    
+    // Si no hay imgurl válido, usar la URL original si es válida
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      return url;
+    }
+    
+    // Si nada funciona, usar un placeholder
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmM2Y0ZjYiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOWNhM2FmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Rm90byBub3QgZGlzcGFjaWJ1bGxlPC90ZXh0PgogIDwvc3ZnPg==';
+  } catch (error) {
+    console.error('Error extracting image URL:', error);
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjI0MCIgdmVyc2lvbj0iMS4wIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNmM2Y0ZjYiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOWNhM2FmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Rm90byBub3QgZGlzcGFjaWJ1bGxlPC90ZXh0PgogIDwvc3ZnPg==';
+  }
+}
+
 interface Partido {
   id: string
   name: string
   party: string
-  image: string
+  foto: string
   description: string
 }
 
@@ -34,7 +60,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
     console.error('Error caught by boundary:', error, errorInfo);
   }
 
-  render() {
+  render() {  
     if (this.state.hasError) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-red-50">
@@ -52,7 +78,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps> {
       );
     }
     return this.props.children;
-  }
+  } 
 }
 
 export default function Home() {
@@ -99,14 +125,14 @@ export default function Home() {
               // Get only the necessary data and provide defaults if undefined
               const name = parsedData.presidente?.nombrePresidente || 'Nombre no disponible'
               const party = parsedData.partido || 'Partido no disponible'
-              const image = parsedData.presidente?.foto || '/placeholder.svg'
+              const foto = parsedData.presidente?.foto || '/placeholder.svg'
               const description = parsedData.descripcion || 'Descripción no disponible'
               
               return {
                 id: partidoId,
                 name,
                 party,
-                image,
+                foto,
                 description,
               }
             } catch (error) {
@@ -115,7 +141,7 @@ export default function Home() {
                 id: partidoId,
                 name: 'Error al cargar',
                 party: 'Error al cargar',
-                image: '/placeholder.svg',
+                foto: '/placeholder.svg',
                 description: 'Error al cargar',
               }
             }
@@ -125,7 +151,7 @@ export default function Home() {
               id: key.name.split('/')[1],
               name: 'Error al cargar',
               party: 'Error al cargar',
-              image: '/placeholder.svg',
+              foto: '/placeholder.svg',
               description: 'Error al cargar',
             }
           }
@@ -264,12 +290,12 @@ export default function Home() {
                         }`}
                       >
                         <img
-                          src={partido.image || "/placeholder.svg"}
+                          src={partido.foto ? extractImageUrl(partido.foto) : '/placeholder.svg'}
                           alt={partido.name}
                           className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
                         />
                       </div>
-                    </div>
+                    </div>  
 
                     {/* Candidate Info */}
                     <div className="text-center flex-1 flex flex-col justify-between">
@@ -360,7 +386,7 @@ export default function Home() {
                     <div className="text-center">
                       <div className="relative mb-4">
                         <img
-                          src={selectedCandidate.image || "/placeholder.svg"}
+                          src={selectedCandidate.foto ? `/images/${selectedCandidate.foto}` : "/placeholder.svg"}
                           alt={selectedCandidate.name}
                           className="w-32 h-32 rounded-full border-4 border-gray-200 mx-auto"
                         />
